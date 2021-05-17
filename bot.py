@@ -1,21 +1,115 @@
 import discord
 from discord.ext import commands
 import os
+import requests
+import asyncio
+
+from json import loads
 
 client = commands.Bot(command_prefix = '-')
 
+
+twitch_Client_ID = 'u4lev38yqxj81bi6ks9ciwak3yebwc'
+
+twitch_Client_secret = 'yr0zgcd8atn3znsn1p9he7ul9vfkqx'
+
+discord_Token = 'TOKEN'
+
+
+
+discord_channelID = 832893456434462751
+
+discord_bot_state = '피몬 방송 알리미'
+
+twitchID = 'pimon_the_hollowD'
+
+ment = '긴급속보)망자피몬 방송킴'
+
+client = discord.Client()
+
+
+
 @client.event
+
 async def on_ready():
 
-  # [discord.Status.online = 온라인],[discord.Status.idle = 자리비움],[discord.Status.dnd = 다른용무],[discord.Status.offline = 오프라인]
-  await client.change_presence(status=discord.Status.online)
+    print(client.user.id)
 
-  await client.change_presence(activity=discord.Game(name="게임 하는중"))
-  #await client.change_presence(activity=discord.Streaming(name="스트림 방송중", url='링크'))
-  #await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="노래 듣는중"))
-  #await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="영상 시청중"))
-  
-  print("봇 이름 : 피몬봇",client.user.name,"봇 아이디 : 4960",client.user.id,"봇 버전 : 1.0.0",discord.__version__)
+    print("ready")
 
 
-client.run(os.environ['ODQzODUwNjY1ODk3NzU0Njc2.YKJ3LA.AfrdagWVwUhy7CxsFASv1hOQrUI'])
+
+    # 디스코드 봇 상태 설정
+
+    game = discord.Game(discord_bot_state)
+
+    await client.change_presence(status=discord.Status.online, activity=game)
+
+
+
+    # 채팅 채널 설정
+
+    channel = client.get_channel(discord_channelID)
+
+
+
+    # 트위치 api 2차인증
+
+    oauth_key = requests.post("https://id.twitch.tv/oauth2/token?client_id=" + twitch_Client_ID + "&client_secret=" + twitch_Client_secret + "&grant_type=client_credentials")
+
+    access_token = loads(oauth_key.text)["access_token"]
+
+    token_type = 'Bearer '
+
+    authorization = token_type + access_token
+
+    print(authorization)
+
+
+
+    check = False     #여기 오류를 수정합니다
+
+
+
+    while True:
+
+        print("ready on Notification")
+
+
+
+        # 트위치 api에게 방송 정보 요청
+
+        headers = {'client-id': twitch_Client_ID, 'Authorization': authorization}
+
+        response_channel = requests.get('https://api.twitch.tv/helix/streams?user_login=' + twitchID, headers=headers)
+
+        print(response_channel.text)
+
+        # 라이브 상태 체크
+
+        try:
+
+            # 방송 정보에서 'data'에서 'type' 값이 live 이고 체크상태가 false 이면 방송 알림(오프라인이면 방송정보가 공백으로 옴)
+
+            if loads(response_channel.text)['data'][0]['type'] == 'live' and check == False:
+
+                await channel.send(ment +'\n https://www.twitch.tv/' + twitchID)
+
+                print("Online")
+
+                check = True
+
+        except:
+
+            print("Offline")
+
+            check = False
+
+
+
+        await asyncio.sleep(30)
+
+
+
+
+client.run(os.environ['TOKEN'])
