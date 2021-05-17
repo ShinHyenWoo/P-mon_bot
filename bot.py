@@ -18,4 +18,4 @@ async def on_ready():
   print("봇 이름 : 피몬봇",client.user.name,"봇 아이디 : 4960",client.user.id,"봇 버전 : 1.0.0",discord.__version__)
 
 
-client.run(os.environ['ODQzODUwNjY1ODk3NzU0Njc2.YKJ3LA.gkILkMVU2AnMbf-uLlas2KvLa0Y'])
+client.run(os.environ['ODQzODUwNjY1ODk3NzU0Njc2.YKJ3LA.vpOkWu7bkB9cqrQJsAXSVIzFYug'])
